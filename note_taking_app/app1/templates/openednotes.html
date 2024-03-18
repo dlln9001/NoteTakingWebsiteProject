@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'mycss.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body style="margin: 0px;" onload="onLoad()" id="openedNotesBody">
+    <div class="divNotesOpened" style="margin-top: 20px;">
+        <div>
+            <a href="{% url 'homepage' %}" class="standardboxing"> Homepage </a>
+            <button name="savebutton" value="save" class="standardbutton buttonhover" id="savenotes" onclick="saveText()"> Save </button>
+            <p class="standardboxing"> {{ status }}</p>
+            <br>
+        </div>
+        <form id ="from2data" method="POST">
+            {% csrf_token %}
+            <button name="delete_note" value=delete class="standardbutton buttonhover"> Delete </button>
+            <input type="hidden" name="xname" value="{{ noteobject.id }}">
+        </form>
+    </div>
+    <div style="display: inline-flex; position: relative; width: 100%;">
+        <button class="boxButton buttonhover" style="margin-left: 25px;" onclick="changeState('strong')"> <strong style="background-color: inherit; font-size: 16px;"> B </strong> </button> 
+        <button class="boxButton buttonhover" onclick="changeState('i')"> <i style="background-color: inherit;" class="italicI"> I </i> </button>
+        <button class="boxButton buttonhover" onclick="changeState('u')"> <u style="background-color: inherit;" class="underlineU"> U </u> </button>
+        <button class="boxButton buttonhover" onclick="makeList('ul')"> <i class="material-icons" style="background-color: inherit;">format_list_bulleted</i> </button>
+        <button class="boxButton buttonhover" onclick="showFonts()" id="fontButton"> 16 </button>
+        <button class="boxButton buttonhover" onclick="changeState('img', true, '{{ defaultImageUrl }}')"> <i class="material-icons" style="background-color: inherit;">image</i> </button>
+        <div class="uploadImageDiv" id="uploadImageDivId">
+        <form action="" class="uploadImageForm" enctype="multipart/form-data" method="POST" onsubmit="sendImage(event)" id="imageFormId">
+            {% csrf_token %}
+            <label for="uploadInputId" style="background-color: inherit;"> Upload Image </label>
+            <input type="file" id="uploadInputId" name="imageInput" style="background-color: inherit;">
+            <button class="buttonhover standardbutton" id="submitButton"> Submit </button>
+        </form>
+        </div>
+        <div id="fontSizesId" class="fontSizes"> </div>
+    </div>
+    <br> 
+    <div  class="noteTitle" contenteditable="true" name="noteTitle" placeholder="Title" contenteditable="true" id="noteTitle"> {{ noteobject.name }} </div>
+    <div name="noteinput" class="textbox" id="notetext" contenteditable="true"> {{ noteobject.text }} </div>
+    <script src="{% static 'app.js' %}"></script>
+    <script>
+
+        // Function from Django Documentation
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        function saveText() {
+            const csrftoken = getCookie('csrftoken')
+            let HttpSave = new XMLHttpRequest()
+            HttpSave.onload = function () {
+                 responseData = JSON.parse(HttpSave.responseText)
+                 document.getElementById('notetext').innerHTML = responseData['noteText']
+            }
+
+            saveObject = {
+                value: document.getElementById('notetext').innerHTML,
+                titleValue: document.getElementById('noteTitle').innerHTML,
+                buttonPressed: 'save'
+            }
+            saveObject = JSON.stringify(saveObject)
+            HttpSave.open('POST', "{% url 'openednotes' noteobject.id %}")
+            HttpSave.setRequestHeader('x-CSRFToken', csrftoken)
+            HttpSave.send(saveObject)
+        }
+
+        function sendImage(event) {
+            event.preventDefault()
+            saveText()
+            let xhttp = new XMLHttpRequest()
+            console.log('sendimageran')
+            xhttp.onload = function () {
+                responseData = JSON.parse(xhttp.responseText)
+                setImageUrl(responseData['imageUrls'])
+                console.log(responseData)
+                console.log('onloadfuncran')
+            }
+            form = new FormData(document.getElementById('imageFormId'))
+            xhttp.open('POST', "{% url 'openednotes' noteobject.id %}")
+            xhttp.send(form)
+            }
+    </script>
+</body>
+</html>     

@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'mycss.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body onload="fixHTML2()" id="homeBody">
+    {% if not username %}
+        <p>Your not signed in!</p> <br>
+        <p> You can't make notes if your not logged in </p>
+    {% else %}
+        <p> Hello {{ username }}</p>
+        <form method="POST" action="">
+            {% csrf_token %}
+            <input type="text" name="notes" placeholder="Enter Note Name" class="generalInput generalfocus">
+            <button name="create_note" value="create" class="standardbutton buttonhover">Make Note</button>
+        </form>
+    {% endif %}
+    <br> 
+    <div style="display: flex; position: relative;">
+        <h3>Your Notes</h3>  
+        <div class="divIcon buttonhover" onclick="showSorts()" id="sortIconId">
+            <i class="fa fa-sort sortIcon" id="sortIconId"></i>
+        </div>
+        <div class="sortByOptions" id="sortOptions">
+            <form action="" method="POST" style="background-color: inherit;">
+            {% csrf_token %}
+            <button class="buttonhover sortByText" name="sortBy" value="sortByTitle"> Sort by Title </button>
+            <button class="buttonhover sortByText" name="sortBy" value="sortByDate"> Sort by Date </button>   
+            </form>
+        </div>
+    </div>
+    <p style="margin: 5px;">
+
+        {% if not noteobject %}
+            <p>You have no notes</p>
+        {% endif %}
+        <div class="divContains">
+            {% for x in noteobject %}
+            <form action="" method="POST">
+                {% csrf_token %}
+                <a class="divNotes textbutton generalhover" href="{% url 'openednotes' x.id %}">
+                    <p class="innerNoteTitle"> {{ x.name }} </p>
+                    <p class="innerNoteText" id="textPreview"> {{x.text}} </p>
+                    <p class="innerNoteDate"> Modified {{ x.lastModified }} </p>
+                </a>
+            </form>
+            {% endfor %}
+        </div>
+
+        <br> <br> <br>
+        <a href="{% url 'loginpage' %}" style="margin: 10px;"> Log in </a>
+        <a href="{% url 'signuppage' %}" style="margin: 10px;"> Sign up </a>
+
+        <form action="" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button name="logout" value="logout"class="standardbutton buttonhover">Logout</button>
+        </form>
+        <br> <br>
+
+
+    </p>
+    <script src="{% static 'app.js' %}"></script>
+</body> 
+</html>
